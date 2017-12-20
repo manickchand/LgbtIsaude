@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:card_view="http://schemas.android.com/tools"
+    card_view:cardCornerRadius="2dp"
+    app:cardElevation="2dp"
+    android:layout_margin="8dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/ivImageItemNews"
+            android:layout_width="match_parent"
+            android:layout_height="170dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:adjustViewBounds="true"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/paisagem" />
+
+        <TextView
+            android:id="@+id/tvNameItemNews"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/ivImageItemNews"
+            android:maxLength="60"
+            android:padding="8dp"
+            android:text="Titulo da noticia"
+            android:textColor="@color/colorAccent"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/tvDateItemNews"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvNameItemNews"
+            android:text="00/00/0000"
+            android:textColor="@color/blueGrey"
+            android:textSize="15sp"
+            android:paddingLeft="8dp"
+            android:paddingBottom="8dp"/>
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>
