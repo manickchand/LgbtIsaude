@@ -2,20 +2,16 @@ package lgbtisaude.oceanbrasil.com.fragments
 
 
 import android.app.Dialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.Fragment
 import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_noticias.*
-import kotlinx.android.synthetic.main.layout_no_has_connection.*
 import lgbtisaude.oceanbrasil.com.R
 import lgbtisaude.oceanbrasil.com.activitys.NewsDetailActivity
 import lgbtisaude.oceanbrasil.com.adapters.AdapterNews
@@ -33,9 +29,11 @@ class FragmentNoticias : Fragment(),
                             IhasConnection,
                             IRecyclerViewOnClickListener{
 
+
     private var mListOfNews =ArrayList<NewsModel>()
     private var call = RetrofitInit().getRetrofit().getAllNews()
     private lateinit var swiperefresh:SwipeRefreshLayout
+    private var alert: Dialog?=null
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -47,7 +45,6 @@ class FragmentNoticias : Fragment(),
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        Log.i("ola","onViewCreated noticias");
         swiperefresh.setColorScheme(R.color.colorPrimary,
                 R.color.colorAccent,
                 R.color.colorBlue,
@@ -67,32 +64,18 @@ class FragmentNoticias : Fragment(),
     override fun verifyIfHasConnection() {
         if (NetworkStatus(activity).hasConnection()) {
             call = RetrofitInit().getRetrofit().getAllNews()
+            if(alert!=null && (alert!!.isShowing)){alert!!.dismiss()}
             getNews(call)
         } else {
-
-            var alert = AlertDialogNoNetwork().createDialog(activity,activity)
-            alert.setPositiveButton("Tentar Novamente", object : DialogInterface.OnClickListener {
-                override fun onClick(dialog: DialogInterface?, which: Int) {
-                    verifyIfHasConnection()
-                    dialog!!.dismiss()
-                }
-            })
-
-            alert.create()
-            alert.show()
-            onLoadComplete()
+            showDialog(R.string.no_network)
         }
     }
 //
     fun getNews(call:Call<List<PostWpModel>>){
 
-        Log.i("ola","call.isExecuted = ${!call.isExecuted}");
-
            swiperefresh.isRefreshing = true
            call.enqueue(object : Callback<List<PostWpModel>> {
                override fun onResponse(call: Call<List<PostWpModel>>?, response: Response<List<PostWpModel>>?) {
-
-                   Log.i("ola","response ok");
 
                    mListOfNews = WpToModel().wpToNoticia(response!!.body()!!) as ArrayList<NewsModel>
 
@@ -103,17 +86,14 @@ class FragmentNoticias : Fragment(),
                }
 
                override fun onFailure(call: Call<List<PostWpModel>>?, t: Throwable?) {
-                   Log.i("ola","erro ${t.toString()}");
-
-                   onLoadComplete()
+                   Log.i("ola","error in getNews: ${t.toString()}");
+                   showDialog(R.string.error_connect_server)
                }
            })
-
-
     }
 
 
-    fun onLoadComplete(){
+    override fun onLoadComplete(){
 //        Handler().postDelayed(object :Runnable{
 //            override fun run() {
 //                swiperefresh.isRefreshing = false
@@ -145,5 +125,21 @@ class FragmentNoticias : Fragment(),
     override fun onResume() {
         super.onResume()
         Log.i("ola","onResume noticias");
+    }
+
+    override fun showDialog(msg: Int) {
+
+        alert = AlertDialogLgbt.createDialog(msg,activity,this)
+
+//        alert.setPositiveButton("Tentar novamente", object :DialogInterface.OnClickListener{
+//            override fun onClick(dialog: DialogInterface?, which: Int) {
+//                verifyIfHasConnection()
+//                dialog!!.dismiss()
+//            }
+//        })
+
+       // alert.create()
+        alert!!.show()
+        onLoadComplete()
     }
 }

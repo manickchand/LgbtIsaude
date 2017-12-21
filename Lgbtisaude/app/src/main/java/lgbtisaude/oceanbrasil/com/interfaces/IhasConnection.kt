@@ -5,4 +5,6 @@ package lgbtisaude.oceanbrasil.com.interfaces
  */
 interface IhasConnection {
     fun verifyIfHasConnection()
+    fun showDialog(msg:Int)
+    fun onLoadComplete()
 }

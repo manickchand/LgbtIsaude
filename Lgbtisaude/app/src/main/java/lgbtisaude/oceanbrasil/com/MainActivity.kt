@@ -79,5 +79,9 @@ class MainActivity : AppCompatActivity(),BottomNavigationView.OnNavigationItemSe
                 .commit()
     }
 
+   fun closeApp(){
+       finish()
+   }
+
 
 }

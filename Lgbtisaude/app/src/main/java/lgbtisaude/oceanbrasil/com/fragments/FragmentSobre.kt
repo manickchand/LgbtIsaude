@@ -1,8 +1,8 @@
 package lgbtisaude.oceanbrasil.com.fragments
 
 
+import android.app.Dialog
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.Fragment
 import android.support.v4.widget.SwipeRefreshLayout
 import android.text.Html
@@ -11,11 +11,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_sobre.*
-import kotlinx.android.synthetic.main.layout_no_has_connection.*
 import lgbtisaude.oceanbrasil.com.R
 import lgbtisaude.oceanbrasil.com.interfaces.IhasConnection
 import lgbtisaude.oceanbrasil.com.model.PageWpModel
-import lgbtisaude.oceanbrasil.com.model.util.DELAY_SWIPE
+import lgbtisaude.oceanbrasil.com.model.util.AlertDialogLgbt
 import lgbtisaude.oceanbrasil.com.model.util.NetworkStatus
 import lgbtisaude.oceanbrasil.com.model.util.RetrofitInit
 import retrofit2.Call
@@ -25,9 +24,17 @@ import retrofit2.Response
 
 class FragmentSobre : Fragment(), SwipeRefreshLayout.OnRefreshListener,IhasConnection {
 
+
+    private var call = RetrofitInit().getRetrofit().getOnePage(2)
+    private lateinit var swiperefreshAbout:SwipeRefreshLayout
+    private lateinit var alert: Dialog
+
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        return inflater!!.inflate(R.layout.fragment_sobre, container, false)
+
+        val view = inflater!!.inflate(R.layout.fragment_sobre, container, false)
+        swiperefreshAbout = view.findViewById<SwipeRefreshLayout>(R.id.swiperefreshSobre)
+        return view
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
@@ -44,24 +51,25 @@ class FragmentSobre : Fragment(), SwipeRefreshLayout.OnRefreshListener,IhasConne
         verifyIfHasConnection()
     }
 
-    override fun verifyIfHasConnection() =
-            if(NetworkStatus(activity).hasConnection()){
-                getAbout(RetrofitInit().getRetrofit().getOnePage(2))
-                rlNoHasConnection.visibility=View.GONE
-            }
-            else {
-                tvSobreTab.text=""
-                onLoadComplete()
-                rlNoHasConnection.visibility=View.VISIBLE
-            }
+    override fun verifyIfHasConnection() {
+        if (NetworkStatus(activity).hasConnection()) {
+            call = RetrofitInit().getRetrofit().getOnePage(2)
+            getAbout(call)
+        } else {
+            tvSobreTab.text = ""
+            showDialog(R.string.no_network)
+        }
+    }
 
 
-    fun onLoadComplete(){
-        Handler().postDelayed(object :Runnable{
-            override fun run() {
-                swiperefreshSobre.isRefreshing = false
-            }
-        }, DELAY_SWIPE)
+    override fun onLoadComplete(){
+//        Handler().postDelayed(object :Runnable{
+//            override fun run() {
+//                swiperefreshSobre.isRefreshing = false
+//            }
+//        }, DELAY_SWIPE)
+
+        swiperefreshAbout.isRefreshing = false
     }
 
     override fun onRefresh() {
@@ -84,9 +92,31 @@ class FragmentSobre : Fragment(), SwipeRefreshLayout.OnRefreshListener,IhasConne
 
             override fun onFailure(call: Call<PageWpModel>?, t: Throwable?) {
                 Log.i("ola","erro call sobre");
-                onLoadComplete()
+                showDialog(R.string.error_connect_server)
             }
         })
+    }
+
+    override fun showDialog(msg: Int) {
+        alert = AlertDialogLgbt.createDialog(msg,activity,this)
+
+//        alert.setPositiveButton("Tentar novamente", object : DialogInterface.OnClickListener{
+//            override fun onClick(dialog: DialogInterface?, which: Int) {
+//                verifyIfHasConnection()
+//                dialog!!.dismiss()
+//            }
+//        })
+
+       // alert.create()
+        alert.show()
+        onLoadComplete()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.i("ola","onPause noticias");
+        call.cancel()
+        onLoadComplete()
     }
 
 }// Required empty public constructor
